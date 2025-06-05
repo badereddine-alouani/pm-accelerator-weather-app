@@ -1,135 +1,104 @@
-Great! Here's the **improved and finalized version** of your `README.md`, customized for use with **npm only** and polished for clarity and professionalism:
+# 🌦️ Weather App — Tech Assessment 1
+
+A modern weather application built with **Next.js** and **ShadCN UI** that provides real-time weather conditions and 5-day forecasts for any location worldwide.
+
+Built by **El Alouani Badereddine** for the **PM Accelerator AI Engineer Intern Technical Assessment**.
 
 ---
 
-# Weather App Frontend
+## ✅ Requirements Completed
 
-A full-featured **Next.js** frontend application built for the **PM Accelerator Technical Assessment**. It allows users to fetch and manage real-time weather data, save records, and export data—all with a clean, modern UI.
-
----
-
-## 🌟 Features
-
-- 🔍 **Location Input**: Search by city name, zip code, or GPS coordinates
-- ☀️ **Real-Time Weather**: Fetch current conditions and a 5-day forecast using the **OpenWeatherMap API**
-- 📝 **CRUD Operations**: Create, read, update, and delete saved weather records
-- 📤 **CSV Export**: Download stored weather data
-- 🧩 **ShadCN UI**: Accessible, modern components with **Tailwind CSS** styling
-- ⚠️ **Error Handling**: Clear feedback and input validation
-- 📌 **PM Accelerator Info**: Includes a description and link to the program
+- ✅ Location input (city, zip/postal code, GPS coordinates)
+- ✅ Current weather display with useful details
+- ✅ 5-day forecast
+- ✅ Current location detection via browser geolocation
+- ✅ Weather icons and modern UI
+- ✅ Real-time API integration (OpenWeatherMap)
+- ✅ PM Accelerator info button with [LinkedIn link](https://www.linkedin.com/school/pmaccelerator/)
 
 ---
 
-## 🔧 Prerequisites
+## 🚀 Quick Start
 
-- **Node.js** (version 18 or later)
-- **npm**
-- Backend API running and accessible at the configured base URL
-- **OpenWeatherMap API Key**
-
----
-
-## 🛠️ Environment Setup
-
-Create a `.env.local` file in the root directory with:
-
-```env
-NEXT_PUBLIC_API_BASE_URL=http://localhost:3001/api
-NEXT_PUBLIC_OPENWEATHER_API_KEY=your_openweathermap_api_key_here
-```
-
-### 🔑 Get Your OpenWeatherMap API Key
-
-1. Go to [https://openweathermap.org/api](https://openweathermap.org/api)
-2. Sign up and log in
-3. Generate a new API key under your account
-4. Paste it in your `.env.local` file
-
----
-
-## 🚀 Getting Started
-
-1. **Clone the repository**
+### 1. Clone and install
 
 ```bash
-git clone <repository-url>
-cd weather-app-frontend
-```
-
-2. **Install dependencies**
-
-```bash
+git clone https://github.com/badereddine-alouani/pm-accelerator-weather-app
+cd weather-app
 npm install
 ```
 
-3. **Run the development server**
+### 2. Add API key
+
+Create `.env.local`:
+
+```bash
+OPENWEATHER_API_KEY=your_api_key_here
+```
+
+Get your free API key from [OpenWeatherMap](https://openweathermap.org/api).
+
+### 3. Run
 
 ```bash
 npm run dev
 ```
 
-4. Visit [http://localhost:3000](http://localhost:3000)
+Open [http://localhost:3000](http://localhost:3000)
 
 ---
 
-## 📡 Backend API Specification
+## 📦 Tech Stack
 
-The app expects the following endpoints to be available at `NEXT_PUBLIC_API_BASE_URL`:
-
-| Method | Endpoint           | Description             |
-| ------ | ------------------ | ----------------------- |
-| GET    | `/api/weather`     | Get all weather records |
-| POST   | `/api/weather`     | Create new record       |
-| PUT    | `/api/weather/:id` | Update existing record  |
-| DELETE | `/api/weather/:id` | Delete a weather record |
-
-### 📄 Expected Record Schema
-
-```json
-{
-  "id": "string",
-  "location": "string",
-  "startDate": "string (ISO format)",
-  "endDate": "string (ISO format)",
-  "temperature": "number",
-  "description": "string",
-  "humidity": "number",
-  "windSpeed": "number",
-  "createdAt": "string (ISO format)"
-}
-```
+- **Framework**: Next.js 14
+- **UI**: ShadCN UI + Tailwind CSS
+- **API**: OpenWeatherMap
+- **Language**: TypeScript
 
 ---
 
-## 📘 Usage Guide
+## 🧪 Test Cases
 
-1. **Add Weather Data**
+Try these inputs:
 
-   - Enter a location and date range
-   - Click "Fetch Weather"
-   - Review the data, then "Save"
-
-2. **View & Manage Records**
-
-   - View all saved weather records
-   - Edit or delete as needed
-
-3. **Export to CSV**
-
-   - Click "Export CSV" to download your data
-
-4. **PM Accelerator Info**
-
-   - Click the "About" button to learn about the internship program
+- Cities: "New York", "London", "Tokyo"
+- Zip codes: "10001", "90210"
+- Coordinates: "40.7128,-74.0060"
+- Click "Use My Location" button
+- Invalid input: "xyz123" (shows error)
 
 ---
 
-## 🧱 Tech Stack
+## 🌐 Features
 
-- **Next.js 14** (App Router)
-- **TypeScript**
-- **ShadCN UI + Tailwind CSS**
-- **Lucide React** (icons)
-- **OpenWeatherMap API**
+- **Smart location input**: Handles multiple formats
+- **Current weather**: Temperature, humidity, wind, conditions
+- **5-day forecast**: Daily highs/lows with icons
+- **Geolocation**: One-click current location
+- **Error handling**: User-friendly messages
+- **Responsive design**: Works on all devices
 
 ---
+
+## 🧠 PM Accelerator
+
+This project is built for the **Product Manager Accelerator** technical assessment.  
+Learn more: [PM Accelerator LinkedIn](https://www.linkedin.com/school/pmaccelerator/)
+
+---
+
+## 🎥 Demo Video
+
+📹 **Demo**: [View Demo Video](https://www.loom.com/share/3a13b01156de4b1c9bab552df47f7c79?sid=0dbcc13a-7a01-4fee-849e-3edce6e8357c)
+
+---
+
+## 📞 Contact
+
+**El Alouani Badereddine**  
+📧 badereddine.elalouani@gmail.com  
+🐙 GitHub: [badereddine-alouani](https://github.com/badereddine-alouani)
+
+---
+
+**Built for PM Accelerator Technical Assessment**

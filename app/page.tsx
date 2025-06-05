@@ -1,103 +1,216 @@
-import Image from "next/image";
+"use client";
 
-export default function Home() {
+import type React from "react";
+
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Loader2, MapPin, Info } from "lucide-react";
+import { InfoModal } from "../components/info-modal";
+import { CurrentWeatherCard } from "@/components/current-weather-card";
+import { ForecastCard } from "@/components/forecast-card";
+
+interface WeatherData {
+  location: {
+    name: string;
+    country: string;
+  };
+  current: {
+    temperature: number;
+    description: string;
+    icon: string;
+    humidity: number;
+    windSpeed: number;
+  };
+  forecast: Array<{
+    date: string;
+    temperature: {
+      min: number;
+      max: number;
+    };
+    description: string;
+    icon: string;
+  }>;
+}
+
+export default function WeatherApp() {
+  const [location, setLocation] = useState("");
+  const [weatherData, setWeatherData] = useState<WeatherData | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [showInfoModal, setShowInfoModal] = useState(false);
+
+  // Fetch weather data from our API route
+  const fetchWeatherData = async (searchLocation: string) => {
+    setLoading(true);
+    setError("");
+
+    try {
+      const response = await fetch(
+        `/api/weather?location=${encodeURIComponent(searchLocation)}`
+      );
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "Failed to fetch weather data");
+      }
+
+      setWeatherData(data);
+    } catch (err) {
+      setError(
+        err instanceof Error ? err.message : "An unexpected error occurred"
+      );
+      setWeatherData(null);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Handle form submission
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!location.trim()) {
+      setError("Please enter a location");
+      return;
+    }
+    fetchWeatherData(location.trim());
+  };
+
+  // Get user's current location using Geolocation API
+  const handleUseMyLocation = () => {
+    if (!navigator.geolocation) {
+      setError("Geolocation is not supported by this browser");
+      return;
+    }
+
+    setLoading(true);
+    setError("");
+
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const { latitude, longitude } = position.coords;
+        fetchWeatherData(`${latitude},${longitude}`);
+      },
+      (error) => {
+        setLoading(false);
+        switch (error.code) {
+          case error.PERMISSION_DENIED:
+            setError("Location access denied by user");
+            break;
+          case error.POSITION_UNAVAILABLE:
+            setError("Location information is unavailable");
+            break;
+          case error.TIMEOUT:
+            setError("Location request timed out");
+            break;
+          default:
+            setError("An unknown error occurred while retrieving location");
+            break;
+        }
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 300000, // 5 minutes
+      }
+    );
+  };
+
   return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm/6 text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-[family-name:var(--font-geist-mono)] font-semibold">
-              app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
-
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
+      <div className="max-w-4xl mx-auto">
+        {/* Header */}
+        <div className="flex justify-between items-center mb-8">
+          <div>
+            <h1 className="text-4xl font-bold text-gray-900 mb-2">
+              Weather App
+            </h1>
+            <p className="text-gray-600">
+              Get current weather and 5-day forecast for any location
+            </p>
+          </div>
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={() => setShowInfoModal(true)}
+            className="h-10 w-10"
           >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+            <Info className="h-4 w-4" />
+          </Button>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+
+        {/* Search Form */}
+        <Card className="mb-8">
+          <CardHeader>
+            <CardTitle>Search Weather</CardTitle>
+            <CardDescription>
+              Enter a city name, zip/postal code, or GPS coordinates (lat,lng)
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handleSubmit} className="flex gap-4">
+              <Input
+                type="text"
+                placeholder="e.g., London, 10001, or 40.7128,-74.0060"
+                value={location}
+                onChange={(e) => setLocation(e.target.value)}
+                className="flex-1"
+                disabled={loading}
+              />
+              <Button type="submit" disabled={loading}>
+                {loading ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  "Search"
+                )}
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={handleUseMyLocation}
+                disabled={loading}
+              >
+                <MapPin className="h-4 w-4 mr-2" />
+                Use My Location
+              </Button>
+            </form>
+          </CardContent>
+        </Card>
+
+        {/* Error Display */}
+        {error && (
+          <Alert className="mb-8 border-red-200 bg-red-50">
+            <AlertDescription className="text-red-800">
+              {error}
+            </AlertDescription>
+          </Alert>
+        )}
+
+        {/* Weather Data Display */}
+        {weatherData && (
+          <div className="space-y-6">
+            {/* Current Weather */}
+            <CurrentWeatherCard
+              location={weatherData.location}
+              current={weatherData.current}
+            />
+
+            {/* 5-Day Forecast */}
+            <ForecastCard forecast={weatherData.forecast} />
+          </div>
+        )}
+
+        {/* Info Modal */}
+        <InfoModal open={showInfoModal} onOpenChange={setShowInfoModal} />
+      </div>
     </div>
   );
 }
