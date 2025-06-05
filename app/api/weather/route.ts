@@ -1,6 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server";
 
-
 const API_KEY = process.env.OPENWEATHER_API_KEY;
 const BASE_URL = "https://api.openweathermap.org/data/2.5";
 
@@ -8,14 +7,12 @@ export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;
   const location = searchParams.get("location");
 
- 
   if (!API_KEY) {
     return NextResponse.json(
       { error: "OpenWeather API key is not configured" },
       { status: 500 }
     );
   }
-
 
   if (!location) {
     return NextResponse.json(
@@ -25,7 +22,6 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    // Determine if location is coordinates (lat,lng) or location name
     const isCoordinates = /^-?\d+\.?\d*,-?\d+\.?\d*$/.test(location.trim());
 
     let weatherQuery: string;
@@ -40,7 +36,6 @@ export async function GET(request: NextRequest) {
       forecastQuery = `q=${encodeURIComponent(location)}`;
     }
 
-    // Fetch current weather and 5-day forecast in parallel
     const [currentWeatherResponse, forecastResponse] = await Promise.all([
       fetch(
         `${BASE_URL}/weather?${weatherQuery}&appid=${API_KEY}&units=metric`
@@ -50,7 +45,6 @@ export async function GET(request: NextRequest) {
       ),
     ]);
 
-    // Check if both requests were successful
     if (!currentWeatherResponse.ok) {
       const errorData = await currentWeatherResponse.json();
       return NextResponse.json(
@@ -68,12 +62,11 @@ export async function GET(request: NextRequest) {
     }
 
     const currentWeatherData = await currentWeatherResponse.json();
-    const forecastData = await forecastResponse.json();
+    const forecastData: { list: ForecastItem[] } =
+      await forecastResponse.json();
 
-    // Process forecast data to get daily forecasts (OpenWeather returns 3-hour intervals)
     const dailyForecasts = processForecastData(forecastData.list);
 
-    // Format the response data
     const weatherData = {
       location: {
         name: currentWeatherData.name,
@@ -99,30 +92,49 @@ export async function GET(request: NextRequest) {
   }
 }
 
-// Helper function to process 5-day forecast data
-function processForecastData(forecastList: any[]) {
-  const dailyData: { [key: string]: any[] } = {};
+// Types for forecast entries
+interface ForecastItem {
+  dt_txt: string;
+  main: {
+    temp: number;
+  };
+  weather: {
+    description: string;
+    icon: string;
+  }[];
+}
 
-  // Group forecast data by date
+interface DailyForecast {
+  date: string;
+  temperature: {
+    min: number;
+    max: number;
+  };
+  description: string;
+  icon: string;
+}
+
+function processForecastData(forecastList: ForecastItem[]): DailyForecast[] {
+  const dailyData: { [date: string]: ForecastItem[] } = {};
+
   forecastList.forEach((item) => {
-    const date = item.dt_txt.split(" ")[0]; // Extract date part (YYYY-MM-DD)
+    const date = item.dt_txt.split(" ")[0];
     if (!dailyData[date]) {
       dailyData[date] = [];
     }
     dailyData[date].push(item);
   });
 
-  // Process each day to get min/max temperatures and most common weather condition
-  const dailyForecasts = Object.entries(dailyData)
-    .slice(0, 5) // Limit to 5 days
+  const dailyForecasts: DailyForecast[] = Object.entries(dailyData)
+    .slice(0, 5)
     .map(([date, dayData]) => {
       const temperatures = dayData.map((item) => item.main.temp);
       const minTemp = Math.min(...temperatures);
       const maxTemp = Math.max(...temperatures);
 
-      // Get the most common weather condition for the day (from noon forecast if available)
       const noonForecast =
-        dayData.find((item) => item.dt_txt.includes("12:00:00")) || dayData[0];
+        dayData.find((item) => item.dt_txt.includes("12:00:00")) ||
+        dayData[0];
 
       return {
         date,
